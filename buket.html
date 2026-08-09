@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puisi Jatuh Cinta 3D Interactive Book</title>
+
+<!-- IMPORT GOOGLE FONT -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: linear-gradient(180deg, #a1c4fd 0%, #c2e9fb 50%, #ffffff 100%);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* WADAH EFEK CINTA DI LUAR BUKU */
+  .hearts-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .floating-heart {
+    position: absolute;
+    bottom: -10%;
+    font-size: 20px;
+    animation: floatUp linear infinite;
+    opacity: 0.8;
+  }
+
+  @keyframes floatUp {
+    0% {
+      transform: translateY(0) rotate(0deg) scale(0.8);
+      opacity: 0;
+    }
+    20% {
+      opacity: 0.8;
+    }
+    100% {
+      transform: translateY(-110vh) rotate(360deg) scale(1.3);
+      opacity: 0;
+    }
+  }
+
+  /* BUKU TERTUTUP DI AWAL */
+  .book-container {
+    width: 300px;
+    height: 300px;
+    position: relative;
+    perspective: 1500px;
+    cursor: pointer;
+    transform: translateX(0);
+    transition: transform 1.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+    z-index: 10;
+  }
+
+  .book-container.open {
+    transform: translateX(150px);
+  }
+
+  /* LEMBARAN KERTAS */
+  .paper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    transition: transform 1.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+    box-shadow: 3px 5px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  .front, .back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow: hidden;
+  }
+
+  /* HALAMAN KANAN */
+  .front {
+    border-radius: 0 4px 4px 0;
+    box-shadow: inset 15px 0 20px -10px rgba(0,0,0,0.15);
+    transform: rotateY(0deg);
+  }
+
+  /* HALAMAN KIRI (BELAKANG) */
+  .back {
+    transform: rotateY(180deg);
+    border-radius: 4px 0 0 4px;
+    box-shadow: inset -15px 0 20px -10px rgba(0,0,0,0.15);
+  }
+
+  .paper.flipped {
+    transform: rotateY(-180deg);
+  }
+
+  /* STYLING FONT TEKS PUISI */
+  .text-content {
+    font-family: 'Caveat', cursive;
+    font-size: 28px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.3;
+    letter-spacing: 1px;
+    color: #4a4a4a;
+  }
+
+  .circle {
+    width: 200px;
+    height: 200px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+
+  .cover-text {
+    color: #ff6b81;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    font-family: 'Playfair Display', serif;
+    text-shadow: 0 0 6px rgba(255, 107, 129, 0.3);
+  }
+
+  /* BINGKAI POLAROID DENGAN HIASAN PITA */
+  .polaroid-frame {
+    background: #ffffff;
+    padding: 10px 10px 28px 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    width: 82%;
+    border-radius: 2px;
+    position: relative;
+  }
+
+  /* PITA DI BINGKAI FOTO */
+  .polaroid-frame::after {
+    content: "🎀";
+    position: absolute;
+    top: -12px;
+    right: -8px;
+    font-size: 24px;
+    transform: rotate(15deg);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  }
+
+  .polaroid-frame img {
+    width: 100%;
+    height: 175px;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* WARNA PASTEL TERANG UNTUK TIAP LEMBAR */
+  #p1 .front { background-color: #ffdae9; }
+  #p1 .back  { background-color: #fff0f5; }
+
+  #p2 .front { background-color: #e0f7fa; }
+  #p2 .back  { background-color: #e8f5e9; }
+
+  #p3 .front { background-color: #fff9db; }
+  #p3 .back  { background-color: #f3e5f5; }
+
+  #p4 .front { background-color: #ffe0b2; }
+  #p4 .back  { background-color: #e1f5fe; }
+
+  #p5 .front { background-color: #f1f8e9; }
+  #p5 .back  { background-color: #fce4ec; }
+
+  #p6 .front { background-color: #ffffff; }
+  #p6 .back  { background-color: #ede7f6; }
+
+  #p7 .front { background-color: #e0f2f1; }
+  #p7 .back  { background-color: #fff3e0; }
+
+  #p8 .front { background-color: #f8bbd0; }
+  #p8 .back  { background-color: #e8eaf6; }
+
+  #p9 .front { background-color: #d1c4e9; }
+  #p9 .back  { background-color: #e0f7fa; }
+
+  #p10 .front { background-color: #ffecb3; }
+  #p10 .back  { background-color: #f3e5f5; }
+
+  #p11 .front { background-color: #d7ccc8; }
+  #p11 .back  { background-color: #ffe0b2; }
+
+  #p12 .front { background-color: #ffcdd2; }
+  #p12 .back  { background-color: #e0f7fa; }
+
+  #p13 .front { background-color: #fce4ec; }
+  #p13 .back  { background-color: #ffffff; }
+  #p13 .back .text-content { color: #ff6b81; }
+</style>
+</head>
+<body>
+
+  <!-- ELEMENT EFEK CINTA -->
+  <div class="hearts-container" id="hearts-container"></div>
+
+  <!-- AUDIO ELEMENTS -->
+  <audio id="bg-music" loop>
+    <source src="https://files.catbox.moe/92fr19.m4a" type="audio/mp4">
+  </audio>
+
+  <audio id="flip-sound" preload="auto">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" type="audio/mpeg">
+  </audio>
+
+  <div class="book-container" id="book">
+    
+    <!-- LEMBAR 1 -->
+    <div class="paper" id="p1">
+      <div class="front">
+        <div class="circle">
+          <div class="cover-text">🎀 Rini Alicia 💖</div>
+        </div>
+      </div>
+      <div class="back">
+        <div class="text-content">itulah kenapa jatuh cinta 🌸✨</div>
+      </div>
+    </div>
+
+    <!-- LEMBAR 2 -->
+    <div class="paper" id="p2">
+      <div class="front"><div class="polaroid-frame"><img src="https://i.postimg.cc/jd3w7yrh/730780212-17952299997189647-6585237121571174492-n.jpg" alt="Foto 1"></div></div>
+      <div class="back"><div class="text-content">dikatakan jatuh 🍃💘</div></div>
+    </div>
+
+    <!-- LEMBAR 3 -->
+    <div class="paper" id="p3">
+      <div class="front"><div class="polaroid-frame"><img src="https://i.postimg.cc/KvBwKDTH/IMG-20260808-225040.jpg" alt="Foto 2"></div></div>
+      <div class="back"><div class="text-content">karna sebagaimana kita jatuh 💫💭</div></div>
+    </div>
+
+    <!-- LEMBAR 4 -->
+    <div class="paper" id="p4">
+      <div class="front"><div class="polaroid-frame"><img src="https://i.postimg.cc/cCY9ndvR/IMG-20260808-225028.jpg" alt="Foto 3"></div></div>
+      <div class="back"><div class="text-content">kita tidak punya kuasa 🕊️💕</div></div>
+    </div>
+
+    <!-- LEMBAR 5 -->
+    <div class="paper" id="p5">
+      <div class="front"><div class="polaroid-frame"><img src="https://i.postimg.cc/ZK8sYKt9/IMG-20260808-224851.jpg" alt="Foto 4"></div></div>
+      <div class="back"><div class="text-content">pilih jatuhh 🧸💓</div></div>
+    </div>
+
+    <!-- LEMBAR 6 -->
+    <div class="paper" id="p6">
+      <div class="front"><div class="polaroid-frame"><img src="https://i.postimg.cc/L6pvWKqw/IMG-20260808-224842.jpg" alt="Foto 5"></div></div>
+      <div class="back"><div class="text-content">pada hati yang manaa 🌷💞</div></div>
+    </div>
+
+    <!-- LEMBAR 7 -->
+    <div class="paper" id="p7">
+      <div class="front"><div class="polaroid-frame"><img src="https://i.postimg.cc/0NbCS93z/IMG-20260808-224834.jpg" alt="Foto 6"></div></div>
+      <div class="back"><div class="text-content">bisa kutahan 💌✨</div></div>
+    </div>
+
+    <!-- LEMBAR 8 -->
+    <div class="paper" id="p8">
+      <div class="front"><div class="polaroid-frame"><img src="https://i.postimg.cc/SRpLHCKg/IMG-20260808-224824.jpg" alt="Foto 7"></div></div>
+      <div class="back"><div class="text-content">senyum sederhanamu 😊💖</div></div>
+    </div>
+
+    <!-- LEMBAR 9 -->
+    <div class="paper" id="p9">
+      <div class="front"><div class="polaroid-frame"><img src="https://i.postimg.cc/pLdQN2Ps/IMG-20260808-224812.jpg" alt="Foto 8"></div></div>
+      <div class="back"><div class="text-content">karena tidak bisa kupunyai 🌙🤍</div></div>
+    </div>
+
+    <!-- LEMBAR 10 -->
+    <div class="paper" id="p10">
+      <div class="front"><div class="polaroid-frame"><img src="https://i.postimg.cc/vTq6s9Pb/Screenshot-2026-08-09-13-10-08-172-com-ss-android-ugc-trill.jpg" alt="Foto 9"></div></div>
+      <div class="back"><div class="text-content">maka kudoakan kisah 🤲💗</div></div>
+    </div>
+
+    <!-- LEMBAR 11 -->
+    <div class="paper" id="p11">
+      <div class="front"><div class="polaroid-frame"><img src="https://i.postimg.cc/CKcjL548/Proyek-Baru-30-A909D32.png" alt="Foto 10"></div></div>
+      <div class="back"><div class="text-content">kita satuuu 💍🥰</div></div>
+    </div>
+
+    <!-- LEMBAR 12 -->
+    <div class="paper" id="p12">
+      <div class="front"><div class="polaroid-frame"><img src="https://i.postimg.cc/cHXg9grr/IMG-20260809-000224.jpg" alt="Foto 11"></div></div>
+      <div class="back"><div class="text-content">di dunia yang nantiii ✨💖🌸</div></div>
+    </div>
+
+    <!-- LEMBAR 13 -->
+    <div class="paper" id="p13">
+      <div class="front"><div class="polaroid-frame"><img src="https://i.postimg.cc/y6ZZKdgR/IMG-20260808-232712.jpg" alt="Foto 12 Tambahan"></div></div>
+      <div class="back"><div class="text-content">Your Gallery 💫❤️</div></div>
+    </div>
+
+  </div>
+
+  <script>
+    const book = document.getElementById('book');
+    const papers = document.querySelectorAll('.paper');
+    const music = document.getElementById('bg-music');
+    const flipSound = document.getElementById('flip-sound');
+    const heartsContainer = document.getElementById('hearts-container');
+
+    let isMusicPlaying = false;
+
+    // GENERATOR EFEK CINTA MELAYANG
+    const heartIcons = ['💖', '💕', '🌸', '✨', '🤍', '💗', '🌷'];
+
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.classList.add('floating-heart');
+      heart.innerText = heartIcons[Math.floor(Math.random() * heartIcons.length)];
+      
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
+      heart.style.fontSize = (Math.random() * 15 + 15) + 'px';
+
+      heartsContainer.appendChild(heart);
+
+      setTimeout(() => {
+        heart.remove();
+      }, 7000);
+    }
+
+    setInterval(createHeart, 300);
+
+    // FUNGSI UNTUK MERAPIKAN URUTAN Z-INDEX SECARA DINAMIS
+    function updateZIndex() {
+      const total = papers.length;
+      papers.forEach((paper, index) => {
+        if (paper.classList.contains('flipped')) {
+          paper.style.zIndex = index + 1;
+        } else {
+          paper.style.zIndex = total - index;
+        }
+      });
+    }
+
+    updateZIndex();
+
+    papers.forEach((paper, index) => {
+      paper.addEventListener('click', function() {
+        
+        if (!isMusicPlaying) {
+          music.play().catch(err => console.log("Audio play error:", err));
+          isMusicPlaying = true;
+        }
+
+        flipSound.currentTime = 0;
+        flipSound.play().catch(err => console.log("Sound effect error:", err));
+
+        if (index === papers.length - 1 && this.classList.contains('flipped')) {
+          papers.forEach((p) => {
+            p.classList.remove('flipped');
+          });
+          book.classList.remove('open');
+          updateZIndex();
+          
+          music.pause();
+          music.currentTime = 0;
+          isMusicPlaying = false;
+          return;
+        }
+
+        if (!this.classList.contains('flipped')) {
+          this.classList.add('flipped');
+          this.style.zIndex = papers.length + 10;
+
+          if (index === 0) {
+            book.classList.add('open');
+          }
+
+          setTimeout(updateZIndex, 600);
+        } else {
+          this.classList.remove('flipped');
+          this.style.zIndex = papers.length + 10;
+
+          if (index === 0) {
+            book.classList.remove('open');
+            music.pause();
+            music.currentTime = 0;
+            isMusicPlaying = false;
+          }
+
+          setTimeout(updateZIndex, 600);
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
